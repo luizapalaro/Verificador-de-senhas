@@ -1,0 +1,344 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SenhaSegura | Gerador e Verificador</title>
+<style>
+:root {
+  --bg: #0b1020;
+  --card: #141c30;
+  --border: #293650;
+  --text: #f1f5f9;
+  --muted: #9aa9c2;
+  --accent: #7c5cff;
+  --green: #2dd4a0;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 30px 16px;
+  background: radial-gradient(ellipse at top, #1c2450, var(--bg) 65%);
+  color: var(--text);
+  font-family: system-ui, -apple-system, sans-serif;
+}
+.container { max-width: 850px; margin: auto; }
+header { text-align: center; margin-bottom: 30px; }
+.logo { font-size: 42px; }
+h1 { margin: 8px 0; font-size: clamp(26px, 5vw, 38px); }
+header p, .muted { color: var(--muted); }
+.accent { color: #a99aff; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.card {
+  background: rgba(20, 28, 48, .94);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 15px 40px #0002;
+  min-width: 0;
+}
+h2 { font-size: 20px; margin: 0 0 8px; }
+.description { color: var(--muted); font-size: 14px; margin-bottom: 22px; }
+label { display: block; font-size: 14px; margin-bottom: 9px; }
+input[type="text"], input[type="password"], input[type="number"] {
+  width: 100%; min-width: 0;
+  padding: 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #0b1222;
+  color: var(--text);
+  font-size: 15px;
+  outline: none;
+}
+input:focus { border-color: var(--accent); }
+input[type="range"] { width: 100%; accent-color: var(--accent); }
+.range-line { display: flex; justify-content: space-between; gap: 10px; }
+#lengthValue { color: #b8aaff; font-weight: bold; }
+.options { display: grid; gap: 13px; margin: 20px 0; }
+.check {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0; color: #dce5f5; cursor: pointer;
+}
+.check input { accent-color: var(--accent); width: 17px; height: 17px; }
+button {
+  cursor: pointer; border: 0; border-radius: 10px;
+  padding: 12px 15px; font-weight: 700; font-size: 14px;
+  transition: .2s;
+}
+button:hover { filter: brightness(1.12); transform: translateY(-1px); }
+.primary { background: var(--accent); color: white; width: 100%; }
+.secondary { background: #27344d; color: white; }
+.actions { display: flex; gap: 8px; margin-top: 12px; }
+.actions button { flex: 1; }
+.password-output {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px; background: #0b1222;
+  border: 1px solid var(--border); border-radius: 10px;
+}
+.password-output input {
+  border: 0; background: transparent; padding: 7px;
+  font-family: monospace; font-size: 14px;
+}
+.password-output input:focus { border: 0; }
+.password-output button { padding: 9px; background: #26334b; color: white; }
+.result { margin-top: 18px; }
+.strength-label { display: flex; justify-content: space-between; gap: 8px; font-size: 13px; margin-bottom: 9px; }
+.bar { display: flex; gap: 5px; }
+.segment { height: 6px; flex: 1; background: #303b50; border-radius: 5px; }
+.tips { list-style: none; padding: 0; margin: 18px 0 0; }
+.tips li { padding: 8px 0; font-size: 13px; color: var(--muted); }
+.tips li::before { content: "○"; margin-right: 9px; }
+.tips li.ok { color: var(--green); }
+.tips li.ok::before { content: "✓"; }
+.status { font-size: 13px; color: var(--muted); margin-top: 12px; min-height: 20px; }
+footer { text-align: center; color: var(--muted); font-size: 12px; margin: 25px 0; }
+@media(max-width: 650px) {
+  .grid { grid-template-columns: 1fr; }
+  .card { padding: 19px; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<header>
+  <div class="logo">🔐</div>
+  <h1>Senha<span class="accent">Segura</span></h1>
+  <p>Crie senhas fortes. Proteja suas contas.</p>
+</header>
+
+<main class="grid">
+<section class="card">
+  <h2>⚡ Gerador de senhas</h2>
+  <p class="description">Personalize e crie uma senha aleatória.</p>
+
+  <div class="range-line">
+    <label for="length">Tamanho da senha</label>
+    <span id="lengthValue">20 caracteres</span>
+  </div>
+  <input id="length" type="range" min="8" max="64" value="20">
+
+  <div class="options">
+    <label class="check"><input id="upper" type="checkbox" checked> Letras maiúsculas (A–Z)</label>
+    <label class="check"><input id="lower" type="checkbox" checked> Letras minúsculas (a–z)</label>
+    <label class="check"><input id="numbers" type="checkbox" checked> Números (0–9)</label>
+    <label class="check"><input id="symbols" type="checkbox" checked> Símbolos (!@#$...)</label>
+    <label class="check"><input id="exclude" type="checkbox"> Excluir caracteres ambíguos (O, 0, l, 1)</label>
+  </div>
+
+  <button class="primary" id="generate">Gerar senha segura</button>
+
+  <div class="result">
+    <label for="generated">Sua senha</label>
+    <div class="password-output">
+      <input id="generated" type="password" readonly placeholder="Clique em gerar">
+      <button id="toggleGenerated" aria-label="Mostrar senha">👁</button>
+    </div>
+    <div class="actions">
+      <button class="secondary" id="copy">Copiar senha</button>
+      <button class="secondary" id="regenerate">↻ Nova senha</button>
+    </div>
+    <div class="status" id="generatorStatus" aria-live="polite"></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2>🛡️ Verificador de senhas</h2>
+  <p class="description">Confira a força de uma senha digitada por você.</p>
+
+  <label for="checkPassword">Digite sua senha</label>
+  <div class="password-output">
+    <input id="checkPassword" type="password" placeholder="Digite uma senha..." autocomplete="off">
+    <button id="toggleCheck" aria-label="Mostrar senha">👁</button>
+  </div>
+
+  <div class="result">
+    <div class="strength-label">
+      <span>Força da senha</span>
+      <strong id="strengthText">Não avaliada</strong>
+    </div>
+    <div class="bar">
+      <div class="segment"></div><div class="segment"></div>
+      <div class="segment"></div><div class="segment"></div>
+      <div class="segment"></div>
+    </div>
+    <p id="scoreInfo" class="muted" style="font-size:13px">Digite uma senha para começar.</p>
+  </div>
+
+  <ul class="tips" id="tips">
+    <li data-tip="length">Pelo menos 12 caracteres</li>
+    <li data-tip="upper">Letras maiúsculas</li>
+    <li data-tip="lower">Letras minúsculas</li>
+    <li data-tip="number">Números</li>
+    <li data-tip="symbol">Símbolos</li>
+    <li data-tip="variety">Evitar sequências e repetições</li>
+  </ul>
+  <div class="status" id="checkerStatus" aria-live="polite"></div>
+</section>
+</main>
+
+<footer>
+  Suas senhas são processadas localmente nesta página. Nunca compartilhe senhas reais.
+</footer>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const length = $('length');
+const generated = $('generated');
+const status = $('generatorStatus');
+
+length.addEventListener('input', () => {
+  $('lengthValue').textContent = length.value + ' caracteres';
+});
+
+function randomIndex(max) {
+  // Evita o viés de módulo usando Web Crypto.
+  const limit = Math.floor(4294967296 / max) * max;
+  const array = new Uint32Array(1);
+  do { crypto.getRandomValues(array); }
+  while (array[0] >= limit);
+  return array[0] % max;
+}
+
+function shuffle(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = randomIndex(i + 1);
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
+function generatePassword() {
+  const ambiguous = 'O0Il1';
+  const sets = [];
+
+  if ($('upper').checked) sets.push('ABCDEFGHIJKLMNOPQRSTUVWXYZ');
+  if ($('lower').checked) sets.push('abcdefghijklmnopqrstuvwxyz');
+  if ($('numbers').checked) sets.push('0123456789');
+  if ($('symbols').checked) sets.push('!@#$%^&*()-_=+[]{};:,.?');
+
+  if ($('exclude').checked) {
+    for (let i = 0; i < sets.length; i++) {
+      sets[i] = [...sets[i]].filter(c => !ambiguous.includes(c)).join('');
+    }
+  }
+
+  if (!sets.length || sets.some(s => !s.length)) {
+    status.textContent = 'Selecione pelo menos um tipo de caractere válido.';
+    return;
+  }
+
+  const size = Number(length.value);
+  const pool = [...new Set(sets.join(''))];
+  const chars = sets.map(set => set[randomIndex(set.length)]);
+
+  while (chars.length < size) chars.push(pool[randomIndex(pool.length)]);
+
+  generated.value = shuffle(chars).join('');
+  generated.type = 'text';
+  $('toggleGenerated').textContent = '🙈';
+  status.textContent = 'Senha criada! Copie para utilizá-la.';
+}
+
+$('generate').addEventListener('click', generatePassword);
+$('regenerate').addEventListener('click', generatePassword);
+
+$('toggleGenerated').addEventListener('click', () => {
+  generated.type = generated.type === 'password' ? 'text' : 'password';
+  $('toggleGenerated').textContent = generated.type === 'password' ? '👁' : '🙈';
+});
+
+$('toggleCheck').addEventListener('click', () => {
+  const field = $('checkPassword');
+  field.type = field.type === 'password' ? 'text' : 'password';
+  $('toggleCheck').textContent = field.type === 'password' ? '👁' : '🙈';
+});
+
+$('copy').addEventListener('click', async () => {
+  if (!generated.value) {
+    status.textContent = 'Gere uma senha primeiro.';
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(generated.value);
+    status.textContent = 'Senha copiada para a área de transferência.';
+  } catch {
+    generated.type = 'text';
+    generated.select();
+    status.textContent = 'Não foi possível copiar automaticamente. Selecione e copie a senha.';
+  }
+});
+
+function analyzePassword(password) {
+  const checks = {
+    length: password.length >= 12,
+    upper: /[A-Z]/.test(password),
+    lower: /[a-z]/.test(password),
+    number: /\d/.test(password),
+    symbol: /[^A-Za-z0-9]/.test(password),
+    variety: !/(.)\1{2,}/.test(password) &&
+      !/(0123|1234|2345|3456|4567|5678|6789|9876|8765|7654|6543|5432|4321|abcd|qwerty)/i.test(password)
+  };
+
+  let points = 0;
+  if (password.length >= 8) points++;
+  if (password.length >= 12) points++;
+  if (password.length >= 16) points++;
+  if (/[a-z]/.test(password) && /[A-Z]/.test(password)) points++;
+  if (/\d/.test(password)) points++;
+  if (/[^A-Za-z0-9]/.test(password)) points++;
+  if (checks.variety) points++;
+  if (/^(.)\1+$/.test(password) || /^(123456|password|senha|qwerty)/i.test(password)) {
+    points = Math.min(points, 1);
+  }
+
+  let level = 'Muito fraca';
+  let color = '#fb7185';
+  let segments = 1;
+
+  if (password.length === 0) {
+    level = 'Não avaliada'; color = '#9aa9c2'; segments = 0;
+  } else if (points >= 6 && password.length >= 12 && checks.variety) {
+    level = 'Muito forte'; color = '#2dd4a0'; segments = 5;
+  } else if (points >= 5) {
+    level = 'Forte'; color = '#7cdb8a'; segments = 4;
+  } else if (points >= 4) {
+    level = 'Razoável'; color = '#facc15'; segments = 3;
+  } else if (points >= 2) {
+    level = 'Fraca'; color = '#fb923c'; segments = 2;
+  }
+
+  return { checks, level, color, segments, points };
+}
+
+$('checkPassword').addEventListener('input', () => {
+  const password = $('checkPassword').value;
+  const result = analyzePassword(password);
+
+  $('strengthText').textContent = result.level;
+  $('strengthText').style.color = result.color;
+  document.querySelectorAll('.segment').forEach((segment, i) => {
+    segment.style.background = i < result.segments ? result.color : '#303b50';
+  });
+
+  $('scoreInfo').textContent = password
+    ? `${password.length} caracteres • ${result.points}/7 critérios de força`
+    : 'Digite uma senha para começar.';
+
+  document.querySelectorAll('#tips li').forEach(li => {
+    li.classList.toggle('ok', !!result.checks[li.dataset.tip]);
+  });
+
+  $('checkerStatus').textContent = password
+    ? 'Avaliação estimada, não uma garantia contra ataques.'
+    : '';
+});
+
+// Gera uma senha inicial ao abrir a página.
+generatePassword();
+</script>
+</body>
+</html>
